@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Express 2012 for Windows Desktop
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrystalRay", "CrystalRay\CrystalRay.csproj", "{7FA94EB8-BEB1-4F61-B614-01FD9AB25941}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrystalRay.UI", "CrystalRay.UI\CrystalRay.UI.csproj", "{B4AF1053-E2CB-41DA-942E-C4F75B944BF0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7FA94EB8-BEB1-4F61-B614-01FD9AB25941}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FA94EB8-BEB1-4F61-B614-01FD9AB25941}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FA94EB8-BEB1-4F61-B614-01FD9AB25941}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FA94EB8-BEB1-4F61-B614-01FD9AB25941}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4AF1053-E2CB-41DA-942E-C4F75B944BF0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4AF1053-E2CB-41DA-942E-C4F75B944BF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4AF1053-E2CB-41DA-942E-C4F75B944BF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4AF1053-E2CB-41DA-942E-C4F75B944BF0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
