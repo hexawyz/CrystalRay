@@ -28,7 +28,7 @@ namespace CrystalRay
 		}
 
 		public Material(Vector4 diffuse, Vector4 specular, double shininess)
-			: this(diffuse, specular, Vector4.Empty, shininess)
+			: this(diffuse, specular, Vector4.Zero, shininess)
 		{
 		}
 
@@ -38,12 +38,12 @@ namespace CrystalRay
 		}
 
 		public Material(Vector4 diffuse, Vector4 specular, double shininess, double reflectivity)
-			: this(diffuse, specular, Vector4.Empty, shininess, reflectivity)
+			: this(diffuse, specular, Vector4.Zero, shininess, reflectivity)
 		{
 		}
 
 		public Material(Vector4 diffuse, Vector4 specular, double shininess, double reflectivity, double refractiveIndex)
-			: this(diffuse, specular, Vector4.Empty, shininess, reflectivity, refractiveIndex)
+			: this(diffuse, specular, Vector4.Zero, shininess, reflectivity, refractiveIndex)
 		{
 		}
 

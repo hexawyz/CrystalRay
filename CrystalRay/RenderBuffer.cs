@@ -93,7 +93,7 @@ namespace CrystalRay
 		/// <summary>
 		/// Clears the buffer with black
 		/// </summary>
-		public void Clear() => Clear(Vector3.Empty);
+		public void Clear() => Clear(Vector3.Zero);
 
 		/// <summary>
 		/// Clears the buffer with the specified color
@@ -233,7 +233,23 @@ namespace CrystalRay
 				ry = (double)y / (_height - 1);
 
 				// Then render the pixel
-				_pixels[y, x] = (Vector3)_currentScene.Cast(new Ray(_currentCamera.Position, new Vector3(Vector2.Lerp(rx, ry, _viewPortMin, _viewPortMax), _viewPortDist)), _currentCamera, ref indexStack, _maxBounces);
+				var value = _currentScene.Cast
+				(
+					new Ray
+					(
+						_currentCamera.Position,
+						new Vector3
+						(
+							new Vector2(rx, ry) * _viewPortMin + new Vector2(1 - rx, 1 - ry) * _viewPortMax,
+							_viewPortDist
+						)
+					),
+					_currentCamera,
+					ref indexStack,
+					_maxBounces
+				);
+
+				_pixels[y, x] = new Vector3(value.X, value.Y, value.Z);
 			}
 
 			if (lastPixel)

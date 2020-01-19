@@ -113,7 +113,7 @@ namespace CrystalRay
 			_lightList = new List<Light>();
 			Elements = new ElementCollection(this);
 			_syncRoot = new object();
-			Ambient = Vector4.Empty;
+			Ambient = Vector4.Zero;
 			RefractionIndex = 1.0f;
 		}
 
@@ -162,7 +162,7 @@ namespace CrystalRay
 				// If there was an intersection
 				if (normalRay != null)
 				{
-					distance = (normalRay.Value.Origin - ray.Origin).LengthSquarred();
+					distance = (normalRay.Value.Origin - ray.Origin).LengthSquared();
 
 					// If distance is lesser we have a new nearest element
 					if (distance > Epsilon && distance < minDistance)
@@ -194,7 +194,7 @@ namespace CrystalRay
 					if (nearestSolid.Material.Reflectivity > 0)
 						reflectedColor = Cast(DisplaceRay(nearestNormalRay.Origin, reflectedDirection), camera, indexStack, nBounces - 1);
 					else
-						reflectedColor = Vector4.Empty;
+						reflectedColor = Vector4.Zero;
 
 					if (nearestSolid.Material.Diffuse.W < 1)
 					{
@@ -228,7 +228,7 @@ namespace CrystalRay
 						else
 						{
 							//refractedColor = Cast(DisplaceRay(nearestNormalRay.Origin, reflectedDirection), camera, refractiveIndex, nBounces - 1);
-							refractedColor = Vector4.Empty;
+							refractedColor = Vector4.Zero;
 						}
 
 						return LightPoint(ray, nearestNormalRay, nearestSolid, camera) * nearestSolid.Material.Diffuse.W
@@ -248,7 +248,7 @@ namespace CrystalRay
 			}
 			else
 			{
-				return Vector4.Empty;
+				return Vector4.Zero;
 			}
 		}
 
@@ -286,12 +286,12 @@ namespace CrystalRay
 			Vector3 viewerDirection;
 			Vector3 reflectedDirection;
 
-			diffuse = Vector4.Empty;
-			specular = Vector4.Empty;
-			reflectedDirection = Vector3.Empty;
+			diffuse = Vector4.Zero;
+			specular = Vector4.Zero;
+			reflectedDirection = Vector3.Zero;
 
 			viewerDirection = camera.Position - normalRay.Origin;
-			viewerDirection.Normalize();
+			viewerDirection = Vector3.Normalize(viewerDirection);
 
 			// We will now try to light the point with every light in the scene
 			for (int i = 0; i < _lightList.Count; i++)
@@ -302,7 +302,7 @@ namespace CrystalRay
 				if (coloredRay != null)
 				{
 					// Compute the distance from our point to the light
-					baseDistance = (normalRay.Origin - coloredRay.Value.Ray.Origin).LengthSquarred();
+					baseDistance = (normalRay.Origin - coloredRay.Value.Ray.Origin).LengthSquared();
 
 					// We now check every element for ensuring the ray can travel to our point freely
 					for (int j = 0; j < _solidList.Count; j++)
@@ -315,7 +315,7 @@ namespace CrystalRay
 							if (_solidList[j] == solid)
 								reflectedDirection = coloredRay.Value.Ray.Direction - 2 * Vector3.DotProduct(coloredRay.Value.Ray.Direction, intersectionNormalRay.Value.Direction) * intersectionNormalRay.Value.Direction;
 
-							distance = (intersectionNormalRay.Value.Origin - coloredRay.Value.Ray.Origin).LengthSquarred();
+							distance = (intersectionNormalRay.Value.Origin - coloredRay.Value.Ray.Origin).LengthSquared();
 							// If the object is between the light and our point, it won't be lit
 							if (distance + Epsilon < baseDistance)
 								goto NotLit;

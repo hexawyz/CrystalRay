@@ -57,7 +57,7 @@ namespace CrystalRay
 			else
 				r = Math.Pow((cos - _cosHalfPhi) / _cosDiff, _attenuation.Falloff);
 
-			l2 = direction.LengthSquarred();
+			l2 = direction.LengthSquared();
 			l1 = Math.Sqrt(l2);
 
 			a = Attenuation.Constant + l1 * Attenuation.Linear + l2 * Attenuation.Quadratic;

@@ -38,7 +38,7 @@ namespace CrystalRay
 
 			// a = ray.Direction.LengthSquarred() = 1.0f
 			b = 2 * Vector3.DotProduct(ray.Direction, v);
-			c = v.LengthSquarred() - Radius * Radius;
+			c = v.LengthSquared() - Radius * Radius;
 
 			d = b * b - 4 * c;
 

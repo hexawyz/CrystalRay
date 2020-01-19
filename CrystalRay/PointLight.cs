@@ -35,7 +35,7 @@ namespace CrystalRay
 			if (i < 0)
 				return null;
 
-			l2 = direction.LengthSquarred();
+			l2 = direction.LengthSquared();
 			l1 = Math.Sqrt(l2);
 
 			a = Attenuation.Constant + l1 * Attenuation.Linear + l2 * Attenuation.Quadratic;

@@ -1,51 +1,62 @@
 using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 
 namespace CrystalRay
 {
-	[StructLayout(LayoutKind.Sequential)]
+	// ⚠️ AVX required
+	[StructLayout(LayoutKind.Sequential, Size = 32)]
 	public struct Vector4 : IEquatable<Vector4>
 	{
-		public static readonly Vector4 Empty = new Vector4();
+		public static readonly Vector4 Zero = new Vector4();
 
-		public double X, Y, Z, W;
+		private readonly Vector256<double> _xyzw;
+
+		public double X => _xyzw.GetElement(0);
+		public double Y => _xyzw.GetElement(1);
+		public double Z => _xyzw.GetElement(2);
+		public double W => _xyzw.GetElement(3);
+
+		private Vector4(Vector256<double> xyzw)
+			=> _xyzw = xyzw;
 
 		public Vector4(Vector3 v)
-		{
-			X = v.X;
-			Y = v.Y;
-			Z = v.Z;
-			W = 1.0f;
-		}
+			: this(v, 1f) { }
 
 		public Vector4(Vector3 v, double w)
-		{
-			X = v.X;
-			Y = v.Y;
-			Z = v.Z;
-			W = w;
-		}
+			: this(Vector256.Create(v._xy, Vector128.Create(v.Z, w))) { }
 
 		public Vector4(double x, double y, double z, double w)
-		{
-			X = x;
-			Y = y;
-			Z = z;
-			W = w;
-		}
+			: this(Vector256.Create(x, y, z, w)) { }
 
 		#region Operators
 
 		public static Vector4 operator +(Vector4 v) => v;
-		public static Vector4 operator +(Vector4 a, Vector4 b) => new Vector4(a.X + b.X, a.Y + b.Y, a.Z + b.Z, a.W + b.W);
-		public static Vector4 operator -(Vector4 v) => new Vector4(-v.X, -v.Y, -v.Z, -v.W);
-		public static Vector4 operator -(Vector4 a, Vector4 b) => new Vector4(a.X - b.X, a.Y - b.Y, a.Z - b.Z, a.W - b.W);
-		public static Vector4 operator *(Vector4 a, Vector4 b) => new Vector4(a.X * b.X, a.Y * b.Y, a.Z * b.Z, a.W * b.W);
-		public static Vector4 operator *(double a, Vector4 b) => new Vector4(a * b.X, a * b.Y, a * b.Z, a * b.W);
-		public static Vector4 operator *(Vector4 a, double b) => new Vector4(a.X * b, a.Y * b, a.Z * b, a.W * b);
-		public static Vector4 operator /(Vector4 a, double b) => new Vector4(a.X / b, a.Y / b, a.Z / b, a.W / b);
 
-		public static explicit operator Vector3(Vector4 v) => new Vector3(v.X, v.Y, v.Z);
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static Vector4 operator +(Vector4 a, Vector4 b) => new Vector4(Avx.Add(a._xyzw, b._xyzw));
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static Vector4 operator -(Vector4 v) => new Vector4(Avx.Xor(v._xyzw, Vector256.Create(long.MinValue).AsDouble()));
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static Vector4 operator -(Vector4 a, Vector4 b) => new Vector4(Avx.Subtract(a._xyzw, b._xyzw));
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static Vector4 operator *(Vector4 a, Vector4 b) => new Vector4(Avx.Multiply(a._xyzw, b._xyzw));
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static Vector4 operator *(double a, Vector4 b) => new Vector4(Avx.Multiply(Vector256.Create(a), b._xyzw));
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static Vector4 operator *(Vector4 a, double b) => new Vector4(Avx.Multiply(a._xyzw, Vector256.Create(b)));
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static Vector4 operator /(Vector4 a, double b) => new Vector4(Avx.Divide(a._xyzw, Vector256.Create(b)));
+
+		public static explicit operator Vector3(Vector4 v) => new Vector3(v._xyzw.GetLower(), v._xyzw.GetElement(2));
 
 		public static bool operator ==(Vector4 left, Vector4 right) => left.Equals(right);
 		public static bool operator !=(Vector4 left, Vector4 right) => !(left == right);
@@ -54,50 +65,46 @@ namespace CrystalRay
 
 		#region Instance Methods
 
-		public double Length() => (double)Math.Sqrt(X * X + Y * Y + Z * Z + W * W);
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public double Length()
+			=> Math.Sqrt(LengthSquared());
 
-		public double LengthSquarred() => X * X + Y * Y + Z * Z + W * W;
-
-		public void Normalize()
-		{
-			double l = X * X + Y * Y + Z * Z + W * W;
-
-			if (l != 0)
-			{
-				l = (double)(1 / Math.Sqrt(l));
-				X *= l;
-				Y *= l;
-				Z *= l;
-				W *= l;
-			}
-		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public double LengthSquared() => DotProduct(this, this);
 
 		#endregion
 
 		#region Static Methods
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static Vector4 Normalize(Vector4 v)
 		{
-			double l = v.X * v.X + v.Y * v.Y + v.Z * v.Z + v.W * v.W;
+			double l = v.LengthSquared();
 
 			if (l != 0)
 			{
-				l = (double)(1 / Math.Sqrt(l));
-				return l * v;
+				return v / Math.Sqrt(l);
 			}
 			else
+			{
 				return v;
+			}
 		}
 
-		public static double DotProduct(Vector4 a, Vector4 b) => a.X * b.X + a.Y * b.Y + a.Z * b.Z + a.W * b.W;
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static double DotProduct(Vector4 a, Vector4 b)
+		{
+			var product = Avx.Multiply(a._xyzw, b._xyzw);
+			var partialSums = Sse2.Add(product.GetUpper(), product.GetLower());
+			return partialSums.GetElement(0) + partialSums.GetElement(1);
+		}
 
-		public static Vector4 CrossProduct(Vector4 a, Vector4 b) => new Vector4(a.Y * b.Z - a.Z * b.Y, a.Z * b.W - a.W * b.Z, a.W * b.X - a.X * b.W, a.X * b.Y - a.Y * b.W);
-
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static Vector4 Lerp(double f, Vector4 a, Vector4 b)
 		{
-			double fi = 1 - f;
-
-			return new Vector4(f * a.X + fi * b.X, f * a.Y + fi * b.Y, f * a.Z + fi * b.Z, f * a.W + fi * b.W);
+			var fv = Vector256.Create(f);
+			var ifv = Avx.Subtract(Vector256.Create(1d), fv);
+			return new Vector4(Avx.Add(Avx.Multiply(fv, a._xyzw), Avx.Multiply(ifv, b._xyzw)));
 		}
 
 		#endregion
