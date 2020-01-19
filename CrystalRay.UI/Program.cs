@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Windows.Forms;
 
 namespace CrystalRay.UI
@@ -14,6 +13,7 @@ namespace CrystalRay.UI
 		{
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
+			Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
 			Application.Run(new MainForm());
 		}
 	}
