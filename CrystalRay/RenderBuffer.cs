@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Threading;
 
 namespace CrystalRay
@@ -12,7 +13,7 @@ namespace CrystalRay
 		private Scene _currentScene;
 		private Camera _currentCamera;
 		private Vector2 _viewPortMin, _viewPortMax;
-		private double _viewPortDist;
+		private float _viewPortDist;
 		private readonly int _width;
 		private readonly int _height;
 		private int _currentX, _currentY;
@@ -93,7 +94,7 @@ namespace CrystalRay
 		/// <summary>
 		/// Clears the buffer with black
 		/// </summary>
-		public void Clear() => Clear(Vector3.Empty);
+		public void Clear() => Clear(Vector3.Zero);
 
 		/// <summary>
 		/// Clears the buffer with the specified color
@@ -177,17 +178,17 @@ namespace CrystalRay
 
 		private void RecalculateViewPort()
 		{
-			double angleH, angleV;
-			double sinH, cosH, sinV, cosV;
+			float angleH, angleV;
+			float sinH, cosH, sinV, cosV;
 
 			angleH = _currentCamera.FieldOfVision.X * 0.5f;
 			angleV = _currentCamera.FieldOfVision.Y * 0.5f;
 
-			sinH = (double)Math.Sin(angleH);
-			cosH = (double)Math.Cos(angleH);
+			sinH = MathF.Sin(angleH);
+			cosH = MathF.Cos(angleH);
 
-			sinV = (double)Math.Sin(angleV);
-			cosV = (double)Math.Cos(angleV);
+			sinV = MathF.Sin(angleV);
+			cosV = MathF.Cos(angleV);
 
 			_viewPortMin = new Vector2(sinH * cosV, -sinV);
 			_viewPortMax = new Vector2(-sinH * cosV, sinV);
@@ -200,9 +201,9 @@ namespace CrystalRay
 		private void RenderThread()
 		{
 			int x, y;
-			double rx, ry;
+			float rx, ry;
 			bool lastPixel = false;
-			Stack<double> indexStack = null;
+			Stack<float> indexStack = null;
 
 			// Render pixels in a multithreaded fashion
 			// The pixel to render is chosen in a synchronized manner, which may look heavy
@@ -229,11 +230,27 @@ namespace CrystalRay
 						lastPixel = true;
 				}
 
-				rx = (double)x / (_width - 1);
-				ry = (double)y / (_height - 1);
+				rx = (float)x / (_width - 1);
+				ry = (float)y / (_height - 1);
 
 				// Then render the pixel
-				_pixels[y, x] = (Vector3)_currentScene.Cast(new Ray(_currentCamera.Position, new Vector3(Vector2.Lerp(rx, ry, _viewPortMin, _viewPortMax), _viewPortDist)), _currentCamera, ref indexStack, _maxBounces);
+				var value = _currentScene.Cast
+				(
+					new Ray
+					(
+						_currentCamera.Position,
+						new Vector3
+						(
+							new Vector2(rx, ry) * _viewPortMin + new Vector2(1 - rx, 1 - ry) * _viewPortMax,
+							_viewPortDist
+						)
+					),
+					_currentCamera,
+					ref indexStack,
+					_maxBounces
+				);
+
+				_pixels[y, x] = new Vector3(value.X, value.Y, value.Z);
 			}
 
 			if (lastPixel)

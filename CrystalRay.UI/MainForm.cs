@@ -2,13 +2,14 @@ using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Numerics;
 using System.Windows.Forms;
 
 namespace CrystalRay.UI
 {
     public sealed partial class MainForm : Form
 	{
-		private static readonly Vector3 LuminanceVector = new Vector3(0.2125, 0.7154, 0.0721);
+		private static readonly Vector3 LuminanceVector = new Vector3(0.2125f, 0.7154f, 0.0721f);
 
 		private Scene _scene;
 		private RenderBuffer _renderBuffer;
@@ -40,8 +41,8 @@ namespace CrystalRay.UI
 			var redPlastic = new Material(new Vector4(1, 0, 0, 1));
 			var greenPlastic = new Material(new Vector4(0, 1, 0, 1));
 			var whitePlaster = new Material(new Vector4(1, 1, 1, 1), new Vector4(1, 1, 1, 1), 1000);
-			var mirror = new Material(new Vector4(0.5, 0.5, 0.5, 1), new Vector4(1, 1, 1, 1), 500, 1.0);
-			var glass = new Material(new Vector4(1.0, 1.0, 1.0, 0.1), new Vector4(1, 1, 1, 1), 100, 0.1, 1.5);
+			var mirror = new Material(new Vector4(0.5f, 0.5f, 0.5f, 1), new Vector4(1, 1, 1, 1), 500, 1.0f);
+			var glass = new Material(new Vector4(1.0f, 1.0f, 1.0f, 0.1f), new Vector4(1, 1, 1, 1), 100, 0.1f, 1.5f);
 
 			_scene = new Scene();
 
@@ -51,26 +52,26 @@ namespace CrystalRay.UI
 			greenPlastic.Shininess = 70;
 			bluePlastic.Shininess = 70;
 
-			_scene.Elements.Add(new Sphere(new Vector3(-1.25, 0, 5), 1.5, redPlastic));
-			_scene.Elements.Add(new Sphere(new Vector3(0, 0, 5), 1.5, greenPlastic));
-			_scene.Elements.Add(new Sphere(new Vector3(1.25, 0, 5), 1.5, bluePlastic));
-			_scene.Elements.Add(new Plane(new Ray(new Vector3(0, -1.51, 0), new Vector3(0, 1, 0)), mirror));
+			_scene.Elements.Add(new Sphere(new Vector3(-1.25f, 0, 5), 1.5f, redPlastic));
+			_scene.Elements.Add(new Sphere(new Vector3(0, 0, 5), 1.5f, greenPlastic));
+			_scene.Elements.Add(new Sphere(new Vector3(1.25f, 0, 5), 1.5f, bluePlastic));
+			_scene.Elements.Add(new Plane(new Ray(new Vector3(0, -1.51f, 0), new Vector3(0, 1, 0)), mirror));
 			_scene.Elements.Add(new Plane(new Ray(new Vector3(0, 0, 10), new Vector3(0, 0, -1)), whitePlaster));
 			_scene.Elements.Add(new Plane(new Ray(new Vector3(0, 0, -3), new Vector3(0, 0, -1)), whitePlaster));
 			_scene.Elements.Add(new Plane(new Ray(new Vector3(-10, 0, 0), new Vector3(1, 0, 0)), whitePlaster));
 			_scene.Elements.Add(new Plane(new Ray(new Vector3(10, 0, 0), new Vector3(-1, 0, 0)), whitePlaster));
-			_scene.Elements.Add(new Plane(new Ray(new Vector3(0, 8.0, 0), new Vector3(0, 1, 0)), whitePlaster));
-			_scene.Elements.Add(new Sphere(new Vector3(-1, -1, 0.5), 0.5, mirror));
-			_scene.Elements.Add(new Sphere(new Vector3(0, -1, 1), 0.5, mirror));
-			_scene.Elements.Add(new Sphere(new Vector3(1, -1, 0.5), 0.5, mirror));
+			_scene.Elements.Add(new Plane(new Ray(new Vector3(0, 8.0f, 0), new Vector3(0, 1, 0)), whitePlaster));
+			_scene.Elements.Add(new Sphere(new Vector3(-1, -1, 0.5f), 0.5f, mirror));
+			_scene.Elements.Add(new Sphere(new Vector3(0, -1, 1), 0.5f, mirror));
+			_scene.Elements.Add(new Sphere(new Vector3(1, -1, 0.5f), 0.5f, mirror));
 
-			_scene.Elements.Add(new PointLight(new Vector3(-2, 2, 3), new Vector4(1, 1, 1, 1), new LightAttenuation(0.0, 0.0, 0.6)));
-			_scene.Elements.Add(new PointLight(new Vector3(2, 2, 3), new Vector4(1, 1, 1, 1), new LightAttenuation(0.0, 0.0, 0.6)));
-			_scene.Elements.Add(new PointLight(new Vector3(0, 6, 6), new Vector4(1, 1, 1, 1), new LightAttenuation(0.0, 0.0, 0.4)));
+			_scene.Elements.Add(new PointLight(new Vector3(-2, 2, 3), new Vector4(1, 1, 1, 1), new LightAttenuation(0, 0, 0.6f)));
+			_scene.Elements.Add(new PointLight(new Vector3(2, 2, 3), new Vector4(1, 1, 1, 1), new LightAttenuation(0, 0, 0.6f)));
+			_scene.Elements.Add(new PointLight(new Vector3(0, 6, 6), new Vector4(1, 1, 1, 1), new LightAttenuation(0, 0, 0.4f)));
 
-			_scene.Elements.Add(new SpotLight(new Ray(new Vector3(0, -1.5, 2), new Vector3(-1, 1, 1)), new Vector4(1, 0, 1, 1), new SpotLightAttenuation(0, 0, 0.2, 0.5 * Math.PI, 0.4 * Math.PI, 1)));
-			_scene.Elements.Add(new SpotLight(new Ray(new Vector3(0, -1.5, 2), new Vector3(0, 1, 1)), new Vector4(1, 1, 0, 1), new SpotLightAttenuation(0, 0, 0.2, 0.5 * Math.PI, 0.4 * Math.PI, 1)));
-			_scene.Elements.Add(new SpotLight(new Ray(new Vector3(0, -1.5, 2), new Vector3(1, 1, 1)), new Vector4(0, 1, 1, 1), new SpotLightAttenuation(0, 0, 0.2, 0.5 * Math.PI, 0.4 * Math.PI, 1)));
+			_scene.Elements.Add(new SpotLight(new Ray(new Vector3(0, -1.5f, 2), new Vector3(-1, 1, 1)), new Vector4(1, 0, 1, 1), new SpotLightAttenuation(0, 0, 0.2f, 0.5f * MathF.PI, 0.4f * MathF.PI, 1)));
+			_scene.Elements.Add(new SpotLight(new Ray(new Vector3(0, -1.5f, 2), new Vector3(0, 1, 1)), new Vector4(1, 1, 0, 1), new SpotLightAttenuation(0, 0, 0.2f, 0.5f * MathF.PI, 0.4f * MathF.PI, 1)));
+			_scene.Elements.Add(new SpotLight(new Ray(new Vector3(0, -1.5f, 2), new Vector3(1, 1, 1)), new Vector4(0, 1, 1, 1), new SpotLightAttenuation(0, 0, 0.2f, 0.5f * MathF.PI, 0.4f * MathF.PI, 1)));
 		}
 
 		public void BeginRendering()
@@ -88,7 +89,7 @@ namespace CrystalRay.UI
 			Invalidate();
 		}
 
-		private byte ClampToByte(double v)
+		private byte ClampToByte(float v)
 		{
 			if (v > 1)
 				return 255;
@@ -125,13 +126,13 @@ namespace CrystalRay.UI
 			_renderBitmap.UnlockBits(bitmapData);
 		}
 
-		private unsafe double ComputeAverageLuminance(Vector3* pixels, int width, int height)
+		private unsafe float ComputeAverageLuminance(Vector3* pixels, int width, int height)
 		{
 			int n = width * height;
-			double accum = 0;
+			float accum = 0;
 
 			for (int i = 0; i < n; i++)
-				accum += Vector3.DotProduct(LuminanceVector, *pixels++);
+				accum += Vector3.Dot(LuminanceVector, *pixels++);
 
 			return accum / n;
 		}

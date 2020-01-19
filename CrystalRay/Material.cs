@@ -1,3 +1,5 @@
+using System.Numerics;
+
 namespace CrystalRay
 {
 	public sealed class Material
@@ -5,7 +7,7 @@ namespace CrystalRay
 		public static Material Default { get; } = new Material();
 
 		public Vector4 Diffuse, Specular, Emissive;
-		public double Shininess, Reflectivity, RefractiveIndex;
+		public float Shininess, Reflectivity, RefractiveIndex;
 
 		public Material()
 			: this(new Vector4(1, 1, 1, 1))
@@ -27,32 +29,32 @@ namespace CrystalRay
 		{
 		}
 
-		public Material(Vector4 diffuse, Vector4 specular, double shininess)
-			: this(diffuse, specular, Vector4.Empty, shininess)
+		public Material(Vector4 diffuse, Vector4 specular, float shininess)
+			: this(diffuse, specular, Vector4.Zero, shininess)
 		{
 		}
 
-		public Material(Vector4 diffuse, Vector4 specular, Vector4 emissive, double shininess)
+		public Material(Vector4 diffuse, Vector4 specular, Vector4 emissive, float shininess)
 			: this(diffuse, specular, emissive, shininess, 0)
 		{
 		}
 
-		public Material(Vector4 diffuse, Vector4 specular, double shininess, double reflectivity)
-			: this(diffuse, specular, Vector4.Empty, shininess, reflectivity)
+		public Material(Vector4 diffuse, Vector4 specular, float shininess, float reflectivity)
+			: this(diffuse, specular, Vector4.Zero, shininess, reflectivity)
 		{
 		}
 
-		public Material(Vector4 diffuse, Vector4 specular, double shininess, double reflectivity, double refractiveIndex)
-			: this(diffuse, specular, Vector4.Empty, shininess, reflectivity, refractiveIndex)
+		public Material(Vector4 diffuse, Vector4 specular, float shininess, float reflectivity, float refractiveIndex)
+			: this(diffuse, specular, Vector4.Zero, shininess, reflectivity, refractiveIndex)
 		{
 		}
 
-		public Material(Vector4 diffuse, Vector4 specular, Vector4 emissive, double shininess, double reflectivity)
+		public Material(Vector4 diffuse, Vector4 specular, Vector4 emissive, float shininess, float reflectivity)
 			: this(diffuse, specular, emissive, shininess, reflectivity, 1)
 		{
 		}
 
-		public Material(Vector4 diffuse, Vector4 specular, Vector4 emissive, double shininess, double reflectivity, double refractiveIndex)
+		public Material(Vector4 diffuse, Vector4 specular, Vector4 emissive, float shininess, float reflectivity, float refractiveIndex)
 		{
 			Diffuse = diffuse;
 			Specular = specular;

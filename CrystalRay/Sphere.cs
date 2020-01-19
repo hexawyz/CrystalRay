@@ -1,11 +1,13 @@
 using System;
+using System.Numerics;
 
 namespace CrystalRay
 {
 	public sealed class Sphere : Solid
 	{
 		public Vector3 Center;
-		public double Radius;
+		private float _radius;
+		private float _radiusSquared;
 
 		public Sphere()
 		{
@@ -16,29 +18,39 @@ namespace CrystalRay
 		{
 		}
 
-		public Sphere(Vector3 center, double radius)
+		public Sphere(Vector3 center, float radius)
 			: this(center, radius, Material.Default)
 		{
 		}
 
-		public Sphere(Vector3 center, double radius, Material material)
+		public Sphere(Vector3 center, float radius, Material material)
 			: base(material)
 		{
 			Center = center;
 			Radius = radius;
 		}
 
+		public float Radius
+		{
+			get => _radius;
+			set
+			{
+				_radius = value;
+				_radiusSquared = value * value;
+			}
+		}
+
 		public override Ray? Intersects(Ray ray)
 		{
-			double b, c, d, x, x1, x2;
+			float b, c, d, x, x1, x2;
 
 			// Finding an intersection here is basically solving a 2nd degree equation
 
 			var v = ray.Origin - Center;
 
 			// a = ray.Direction.LengthSquarred() = 1.0f
-			b = 2 * Vector3.DotProduct(ray.Direction, v);
-			c = v.LengthSquarred() - Radius * Radius;
+			b = 2 * Vector3.Dot(ray.Direction, v);
+			c = v.LengthSquared() - _radiusSquared;
 
 			d = b * b - 4 * c;
 
@@ -52,7 +64,7 @@ namespace CrystalRay
 			}
 			else // And two possible intersections if d > 0
 			{
-				d = Math.Sqrt(d);
+				d = MathF.Sqrt(d);
 
 				// a = 1.0f => -1 / 2a = -0.5f
 				x1 = -0.5f * (b + d);
@@ -66,9 +78,9 @@ namespace CrystalRay
 				return null;
 
 			if (x1 > 0 && x2 > 0)
-				x = Math.Min(x1, x2);
+				x = MathF.Min(x1, x2);
 			else
-				x = Math.Max(x1, x2);
+				x = MathF.Max(x1, x2);
 
 			// Now we have the intersection point
 			v = ray.Origin + x * ray.Direction;

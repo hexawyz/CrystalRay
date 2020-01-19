@@ -1,3 +1,5 @@
+using System.Numerics;
+
 namespace CrystalRay
 {
 	public abstract class Light : Element

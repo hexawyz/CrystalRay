@@ -3,11 +3,11 @@ using System.Runtime.InteropServices;
 namespace CrystalRay
 {
 	[StructLayout(LayoutKind.Sequential)]
-	public struct LightAttenuation
+	public readonly struct LightAttenuation
 	{
-		public double Constant, Linear, Quadratic;
+		public readonly float Constant, Linear, Quadratic;
 
-		public LightAttenuation(double constant, double linear, double quadratic)
+		public LightAttenuation(float constant, float linear, float quadratic)
 		{
 			Constant = constant;
 			Linear = linear;

@@ -1,3 +1,5 @@
+using System.Numerics;
+
 namespace CrystalRay
 {
 	public sealed class Plane : Solid
@@ -27,17 +29,17 @@ namespace CrystalRay
 		public override Ray? Intersects(Ray ray)
 		{
 			Vector3 v, x;
-			double l1, l2;
+			float l1, l2;
 
 			// If the ray is parallel or included in the plane, it doesn't intersect
-			if ((l1 = Vector3.DotProduct(NormalRay.Direction, ray.Direction)) == 0)
+			if ((l1 = Vector3.Dot(NormalRay.Direction, ray.Direction)) == 0)
 			{
 				return null;
 			}
 			else
 			{
 				v = ray.Origin - NormalRay.Origin;
-				l2 = Vector3.DotProduct(NormalRay.Direction, v);
+				l2 = Vector3.Dot(NormalRay.Direction, v);
 
 				// If l1 and l2 have the same sign, the ray doesn't point towards the plane
 				if (l1 > 0 && l2 > 0 || l1 < 0 && l2 < 0)

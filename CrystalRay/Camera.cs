@@ -1,10 +1,11 @@
 using System;
+using System.Numerics;
 
 namespace CrystalRay
 {
 	public sealed class Camera
 	{
-		public static readonly Vector2 DefaultFieldOfVision = new Vector2(Math.PI / 2, 3 * Math.PI / 8);
+		public static readonly Vector2 DefaultFieldOfVision = new Vector2(MathF.PI / 2, 3 * MathF.PI / 8);
 		public static readonly Vector3 DefaultPosition = new Vector3(0, 0, -1);
 		public static readonly Vector3 DefaultDirection = new Vector3(0, 0, 1);
 

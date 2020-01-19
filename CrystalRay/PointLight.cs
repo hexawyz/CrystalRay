@@ -1,11 +1,12 @@
 using System;
+using System.Numerics;
 
 namespace CrystalRay
 {
 	public sealed class PointLight : Light
 	{
 		public Vector3 Position;
-		public LightAttenuation Attenuation;
+		public readonly LightAttenuation Attenuation;
 
 		public PointLight(Vector3 position)
 			: this(position, new Vector4(1, 1, 1, 1))
@@ -27,16 +28,16 @@ namespace CrystalRay
 		public override ColoredRay? GetLightRay(Ray normalRay)
 		{
 			var direction = normalRay.Origin - Position;
-			double l2, l1, i, a;
+			float l2, l1, i, a;
 
-			i = -Vector3.DotProduct(direction, normalRay.Direction);
+			i = -Vector3.Dot(direction, normalRay.Direction);
 
 			// If intensity is negative, the light doesn't point in the right direction
 			if (i < 0)
 				return null;
 
-			l2 = direction.LengthSquarred();
-			l1 = Math.Sqrt(l2);
+			l2 = direction.LengthSquared();
+			l1 = MathF.Sqrt(l2);
 
 			a = Attenuation.Constant + l1 * Attenuation.Linear + l2 * Attenuation.Quadratic;
 
