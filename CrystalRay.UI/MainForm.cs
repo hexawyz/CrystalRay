@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Drawing.Drawing2D;
-using System.Text;
 using System.Windows.Forms;
 
 namespace CrystalRay.UI
 {
-	public sealed partial class MainForm : Form
+    public sealed partial class MainForm : Form
 	{
 		static readonly Vector3 luminanceVector = new Vector3(0.2125, 0.7154, 0.0721);
 
