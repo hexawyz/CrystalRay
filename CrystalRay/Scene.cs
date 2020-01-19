@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.ObjectModel;
+using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Collections.ObjectModel;
 
 namespace CrystalRay
 {
@@ -11,87 +10,87 @@ namespace CrystalRay
 
 		public sealed class ElementCollection : Collection<Element>
 		{
-			Scene scene;
+			private readonly Scene _scene;
 
 			public ElementCollection(Scene scene)
-				: base(scene.elementList)
-			{
-				this.scene = scene;
-			}
+				: base(scene._elementList) => _scene = scene;
 
 			protected override void ClearItems()
 			{
-				lock (scene.syncRoot)
+				lock (_scene._syncRoot)
 				{
-					scene.solidList.Clear();
-					scene.lightList.Clear();
+					_scene._solidList.Clear();
+					_scene._lightList.Clear();
 
-					for (int i = 0; i < scene.elementList.Count; i++)
-						scene.elementList[i].Scene = null;
+					for (int i = 0; i < _scene._elementList.Count; i++)
+						_scene._elementList[i].Scene = null;
 
-					scene.elementList.Clear();
+					_scene._elementList.Clear();
 				}
 			}
 
 			protected override void InsertItem(int index, Element item)
 			{
-				lock (scene.syncRoot)
+				lock (_scene._syncRoot)
 				{
 					if (item.Scene != null)
 						throw new InvalidOperationException();
 
-					scene.elementList.Insert(index, item);
-
-					if (item is Solid)
-						scene.solidList.Add((Solid)item);
-					else if (item is Light)
-						scene.lightList.Add((Light)item);
+					_scene._elementList.Insert(index, item);
+					AddToScene(item);
 				}
 			}
 
 			protected override void SetItem(int index, Element item)
 			{
-				lock (scene.syncRoot)
+				lock (_scene._syncRoot)
 				{
-					Element element = scene.elementList[index];
+					var element = _scene._elementList[index];
 
 					if (element != item)
 					{
 						if (item.Scene != null)
 							throw new InvalidOperationException();
 
-						if (element is Solid)
-							scene.solidList.Remove((Solid)element);
-						else if (element is Light)
-							scene.lightList.Remove((Light)element);
+						RemoveFromScene(element);
 
-						item.Scene = scene;
-						scene.elementList[index] = item;
+						item.Scene = _scene;
+						_scene._elementList[index] = item;
 						element.Scene = null;
 
-						if (item is Solid)
-							scene.solidList.Add((Solid)item);
-						else if (item is Light)
-							scene.lightList.Add((Light)item);
+						AddToScene(item);
 					}
 				}
 			}
 
 			protected override void RemoveItem(int index)
 			{
-				lock (scene.syncRoot)
+				lock (_scene._syncRoot)
 				{
-					Element element = scene.elementList[index];
+					var element = _scene._elementList[index];
 
-					scene.elementList.RemoveAt(index);
+					_scene._elementList.RemoveAt(index);
 
-					if (element is Solid)
-						scene.solidList.Remove((Solid)element);
-					else if (element is Light)
-						scene.lightList.Remove((Light)element);
+					RemoveFromScene(element);
 
 					element.Scene = null;
 				}
+			}
+
+			private void AddToScene(Element element)
+			{
+				if (element is Solid solid)
+					_scene._solidList.Add(solid);
+				else if (element is Light light)
+					_scene._lightList.Add(light);
+			}
+
+			private void RemoveFromScene(Element element)
+			{
+				if (element is Solid solid)
+					_scene._solidList.Remove(solid);
+				else if (element is Light light)
+					_scene._lightList.Remove(light);
 			}
 		}
 
@@ -100,64 +99,35 @@ namespace CrystalRay
 		// We use this value of epsilon for distance comparisons
 		// A too small epsilon will give bad results for the lighting (black dots)
 		// A too big epsilon will interfere with the ray tracing algorithm itself
-		const double epsilon = 0.000001;
+		private const double Epsilon = 0.000001;
 
-		List<Element> elementList;
-		List<Solid> solidList;
-		List<Light> lightList;
-		ElementCollection elementCollection;
-		Vector4 ambient;
-		double refractiveIndex;
-		object syncRoot;
+		private readonly List<Element> _elementList;
+		private readonly List<Solid> _solidList;
+		private readonly List<Light> _lightList;
+		private readonly object _syncRoot;
 
 		public Scene()
 		{
-			elementList = new List<Element>();
-			solidList = new List<Solid>();
-			lightList = new List<Light>();
-			elementCollection = new ElementCollection(this);
-			syncRoot = new object();
+			_elementList = new List<Element>();
+			_solidList = new List<Solid>();
+			_lightList = new List<Light>();
+			Elements = new ElementCollection(this);
+			_syncRoot = new object();
 			Ambient = Vector4.Empty;
-			refractiveIndex = 1.0f;
+			RefractionIndex = 1.0f;
 		}
 
-		public ElementCollection Elements
-		{
-			get
-			{
-				return elementCollection;
-			}
-		}
+		public ElementCollection Elements { get; }
 
-		public Vector4 Ambient
-		{
-			get
-			{
-				return ambient;
-			}
-			set
-			{
-				ambient = value;
-			}
-		}
+		public Vector4 Ambient { get; set; }
 
-		public double RefractionIndex
-		{
-			get
-			{
-				return refractiveIndex;
-			}
-			set
-			{
-				refractiveIndex = value;
-			}
-		}
+		public double RefractionIndex { get; set; }
 
 		public Vector4 Cast(Ray ray, Camera camera, int maxBounces)
 		{
-			Stack<double> indexStack = new Stack<double>(maxBounces);
+			var indexStack = new Stack<double>(maxBounces);
 
-			indexStack.Push(refractiveIndex);
+			indexStack.Push(RefractionIndex);
 
 			return Cast(ray, camera, indexStack, maxBounces);
 		}
@@ -169,7 +139,7 @@ namespace CrystalRay
 			else
 				indexStack.Clear();
 
-			indexStack.Push(refractiveIndex);
+			indexStack.Push(RefractionIndex);
 
 			return Cast(ray, camera, indexStack, maxBounces);
 		}
@@ -181,13 +151,13 @@ namespace CrystalRay
 			double distance,
 				minDistance = double.PositiveInfinity;
 			Solid nearestSolid = null;
-			Ray nearestNormalRay = Ray.Empty;
+			var nearestNormalRay = Ray.Empty;
 			bool outgoing = false;
 
 			// Checks every element for an intersection with the ray
-			for (int i = 0; i < solidList.Count; i++)
+			for (int i = 0; i < _solidList.Count; i++)
 			{
-				normalRay = solidList[i].Intersects(ray);
+				normalRay = _solidList[i].Intersects(ray);
 
 				// If there was an intersection
 				if (normalRay != null)
@@ -195,10 +165,10 @@ namespace CrystalRay
 					distance = (normalRay.Value.Origin - ray.Origin).LengthSquarred();
 
 					// If distance is lesser we have a new nearest element
-					if (distance > epsilon && distance < minDistance)
+					if (distance > Epsilon && distance < minDistance)
 					{
 						minDistance = distance;
-						nearestSolid = solidList[i];
+						nearestSolid = _solidList[i];
 						nearestNormalRay = normalRay.Value;
 					}
 				}
@@ -245,49 +215,52 @@ namespace CrystalRay
 							}
 						}
 						else
+						{
 							newIndex = indexStack.Peek();
+						}
 
 						refractedDirection = Refract(nearestNormalRay.Direction, ray.Direction, indexStack.Peek(), newIndex);
 
 						if (refractedDirection != null)
+						{
 							refractedColor = Cast(DisplaceRay(nearestNormalRay.Origin, refractedDirection.Value), camera, indexStack, nBounces - 1);
+						}
 						else
+						{
 							//refractedColor = Cast(DisplaceRay(nearestNormalRay.Origin, reflectedDirection), camera, refractiveIndex, nBounces - 1);
 							refractedColor = Vector4.Empty;
+						}
 
 						return LightPoint(ray, nearestNormalRay, nearestSolid, camera) * nearestSolid.Material.Diffuse.W
 							+ nearestSolid.Material.Reflectivity * nearestSolid.Material.Diffuse * reflectedColor
 							+ refractedColor * (1 - nearestSolid.Material.Diffuse.W);
 					}
 					else
+					{
 						return LightPoint(ray, nearestNormalRay, nearestSolid, camera)
 							+ nearestSolid.Material.Reflectivity * nearestSolid.Material.Diffuse * reflectedColor;
+					}
 				}
 				else
+				{
 					return LightPoint(ray, nearestNormalRay, nearestSolid, camera);
+				}
 			}
 			else
+			{
 				return Vector4.Empty;
+			}
 		}
 
-		Ray DisplaceRay(Vector3 origin, Vector3 direction)
-		{
-			return new Ray(origin - 0.5 * epsilon * direction, direction);
-		}
+		private Ray DisplaceRay(Vector3 origin, Vector3 direction) => new Ray(origin - 0.5 * Epsilon * direction, direction);
 
-		Vector3 Tangent(Vector3 normal, Vector3 direction)
-		{
-			return direction - Vector3.DotProduct(direction, normal) * normal;
-		}
+		private Vector3 Tangent(Vector3 normal, Vector3 direction) => direction - Vector3.DotProduct(direction, normal) * normal;
 
-		Vector3 Reflect(Vector3 normal, Vector3 direction)
-		{
-			return direction - 2 * Vector3.DotProduct(direction, normal) * normal;
-		}
+		private Vector3 Reflect(Vector3 normal, Vector3 direction) => direction - 2 * Vector3.DotProduct(direction, normal) * normal;
 
-		Vector3? Refract(Vector3 normal, Vector3 direction, double n1, double n2)
+		private Vector3? Refract(Vector3 normal, Vector3 direction, double n1, double n2)
 		{
-			Vector3 tangent = Tangent(normal, direction);
+			var tangent = Tangent(normal, direction);
 			double sin, cos;
 
 			if (n1 == n2)
@@ -302,12 +275,16 @@ namespace CrystalRay
 			//return direction + (n1 - n2) * normal;
 		}
 
-		Vector4 LightPoint(Ray incomingRay, Ray normalRay, Solid solid, Camera camera)
+		private Vector4 LightPoint(Ray incomingRay, Ray normalRay, Solid solid, Camera camera)
 		{
-			Vector4 diffuse, specular;
-			double baseDistance, distance, specularCoefficient;
+			Vector4 diffuse;
+			Vector4 specular;
+			double baseDistance;
+			double distance;
+			double specularCoefficient;
 			Ray? intersectionNormalRay;
-			Vector3 viewerDirection, reflectedDirection;
+			Vector3 viewerDirection;
+			Vector3 reflectedDirection;
 
 			diffuse = Vector4.Empty;
 			specular = Vector4.Empty;
@@ -317,11 +294,9 @@ namespace CrystalRay
 			viewerDirection.Normalize();
 
 			// We will now try to light the point with every light in the scene
-			for (int i = 0; i < lightList.Count; i++)
+			for (int i = 0; i < _lightList.Count; i++)
 			{
-				ColoredRay? coloredRay;
-
-				coloredRay = lightList[i].GetLightRay(normalRay);
+				var coloredRay = _lightList[i].GetLightRay(normalRay);
 
 				// The light might not cast any ray towards our point
 				if (coloredRay != null)
@@ -330,30 +305,30 @@ namespace CrystalRay
 					baseDistance = (normalRay.Origin - coloredRay.Value.Ray.Origin).LengthSquarred();
 
 					// We now check every element for ensuring the ray can travel to our point freely
-					for (int j = 0; j < solidList.Count; j++)
+					for (int j = 0; j < _solidList.Count; j++)
 					{
-						intersectionNormalRay = solidList[j].Intersects(coloredRay.Value.Ray);
+						intersectionNormalRay = _solidList[j].Intersects(coloredRay.Value.Ray);
 
 						// If there is an intesection, check the length (maybe our point is nearer)
 						if (intersectionNormalRay != null)
 						{
-							if (solidList[j] == solid)
+							if (_solidList[j] == solid)
 								reflectedDirection = coloredRay.Value.Ray.Direction - 2 * Vector3.DotProduct(coloredRay.Value.Ray.Direction, intersectionNormalRay.Value.Direction) * intersectionNormalRay.Value.Direction;
 
 							distance = (intersectionNormalRay.Value.Origin - coloredRay.Value.Ray.Origin).LengthSquarred();
 							// If the object is between the light and our point, it won't be lit
-							if (distance + epsilon < baseDistance)
-							    goto NotLit;
+							if (distance + Epsilon < baseDistance)
+								goto NotLit;
 						}
 					}
 
-					specularCoefficient = (double)(Math.Pow(Vector3.DotProduct(reflectedDirection, viewerDirection), solid.Material.Shininess));
+					specularCoefficient = Math.Pow(Vector3.DotProduct(reflectedDirection, viewerDirection), solid.Material.Shininess);
 
 					// Accumulate the light
 					diffuse += coloredRay.Value.Color;
 					specular += specularCoefficient * coloredRay.Value.Color;
 				}
-			NotLit: ;
+			NotLit:;
 			}
 
 			return (Ambient + diffuse) * solid.Material.Diffuse + specular * solid.Material.Specular + solid.Material.Emissive;

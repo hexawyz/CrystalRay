@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System;
 
 namespace CrystalRay
 {
 	public sealed class SpotLight : Light
 	{
 		public Ray CenterRay;
-		SpotLightAttenuation attenuation;
-		double cosHalfTheta, cosHalfPhi, cosDiff;
+		private SpotLightAttenuation _attenuation;
+		private double _cosHalfTheta, _cosHalfPhi, _cosDiff;
 
 		public SpotLight(Ray centerRay)
 			: this(centerRay, new Vector4(1, 1, 1, 1))
@@ -29,22 +27,19 @@ namespace CrystalRay
 
 		public SpotLightAttenuation Attenuation
 		{
-			get
-			{
-				return attenuation;
-			}
+			get => _attenuation;
 			set
 			{
-				attenuation = value;
-				cosHalfPhi = (double)Math.Cos(0.5 * attenuation.Phi);
-				cosHalfTheta = (double)Math.Cos(0.5 * attenuation.Theta);
-				cosDiff = cosHalfTheta - cosHalfPhi;
+				_attenuation = value;
+				_cosHalfPhi = Math.Cos(0.5 * _attenuation.Phi);
+				_cosHalfTheta = Math.Cos(0.5 * _attenuation.Theta);
+				_cosDiff = _cosHalfTheta - _cosHalfPhi;
 			}
 		}
 
 		public override ColoredRay? GetLightRay(Ray normalRay)
 		{
-			Vector3 direction = normalRay.Origin - CenterRay.Origin;
+			var direction = normalRay.Origin - CenterRay.Origin;
 			double l2, l1, i, cos, a, r;
 
 			i = -Vector3.DotProduct(direction, normalRay.Direction);
@@ -55,19 +50,19 @@ namespace CrystalRay
 				return null;
 
 			// If we the point is outside of the cone, we return no ray
-			if (cos <= cosHalfPhi)
+			if (cos <= _cosHalfPhi)
 				r = 0;
-			else if (cos > cosHalfTheta)
+			else if (cos > _cosHalfTheta)
 				r = 1;
 			else
-				r = (double)Math.Pow((cos - cosHalfPhi) / cosDiff, attenuation.Falloff);
+				r = Math.Pow((cos - _cosHalfPhi) / _cosDiff, _attenuation.Falloff);
 
 			l2 = direction.LengthSquarred();
-			l1 = (double)Math.Sqrt(l2);
+			l1 = Math.Sqrt(l2);
 
 			a = Attenuation.Constant + l1 * Attenuation.Linear + l2 * Attenuation.Quadratic;
 
-			return new ColoredRay(new Ray(CenterRay.Origin, direction), (r * i / a) * Color);
+			return new ColoredRay(new Ray(CenterRay.Origin, direction), r * i / a * Color);
 		}
 	}
 }

@@ -1,4 +1,3 @@
-﻿using System;
 using System.Runtime.InteropServices;
 
 namespace CrystalRay
@@ -8,28 +7,18 @@ namespace CrystalRay
 	{
 		public static readonly Ray Empty = new Ray();
 
-		Vector3 origin, direction;
+		private Vector3 _direction;
 
 		public Ray(Vector3 origin, Vector3 direction)
 		{
-			this.origin = origin;
-			this.direction = Vector3.Normalize(direction);
+			Origin = origin;
+			_direction = Vector3.Normalize(direction);
 		}
 
 		/// <summary>
 		/// Gets or sets the origin of the ray
 		/// </summary>
-		public Vector3 Origin
-		{
-			get
-			{
-				return origin;
-			}
-			set
-			{
-				origin = value;
-			}
-		}
+		public Vector3 Origin { get; set; }
 
 		/// <summary>
 		/// Gets or sets the direction
@@ -39,19 +28,11 @@ namespace CrystalRay
 		/// </remarks>
 		public Vector3 Direction
 		{
-			get
-			{
-				return direction;
-			}
-			set
-			{
-				direction = Vector3.Normalize(value);
-			}
+			get => _direction;
+			set => _direction = Vector3.Normalize(value);
 		}
 
 		public override string ToString()
-		{
-			return "{ Origin = " + Origin.ToString() + "; Direction = " + Direction.ToString() + " }";
-		}
+			=> $"{{ Origin = {Origin.ToString()}; Direction = {Direction.ToString()} }}";
 	}
 }

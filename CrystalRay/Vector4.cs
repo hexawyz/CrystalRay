@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 
 namespace CrystalRay
 {
 	[StructLayout(LayoutKind.Sequential)]
-	public struct Vector4
+	public struct Vector4 : IEquatable<Vector4>
 	{
 		public static readonly Vector4 Empty = new Vector4();
 
@@ -36,74 +36,27 @@ namespace CrystalRay
 
 		#region Operators
 
-		public static Vector4 operator +(Vector4 v)
-		{
-			return v;
-		}
+		public static Vector4 operator +(Vector4 v) => v;
+		public static Vector4 operator +(Vector4 a, Vector4 b) => new Vector4(a.X + b.X, a.Y + b.Y, a.Z + b.Z, a.W + b.W);
+		public static Vector4 operator -(Vector4 v) => new Vector4(-v.X, -v.Y, -v.Z, -v.W);
+		public static Vector4 operator -(Vector4 a, Vector4 b) => new Vector4(a.X - b.X, a.Y - b.Y, a.Z - b.Z, a.W - b.W);
+		public static Vector4 operator *(Vector4 a, Vector4 b) => new Vector4(a.X * b.X, a.Y * b.Y, a.Z * b.Z, a.W * b.W);
+		public static Vector4 operator *(double a, Vector4 b) => new Vector4(a * b.X, a * b.Y, a * b.Z, a * b.W);
+		public static Vector4 operator *(Vector4 a, double b) => new Vector4(a.X * b, a.Y * b, a.Z * b, a.W * b);
+		public static Vector4 operator /(Vector4 a, double b) => new Vector4(a.X / b, a.Y / b, a.Z / b, a.W / b);
 
-		public static Vector4 operator +(Vector4 a, Vector4 b)
-		{
-			return new Vector4(a.X + b.X, a.Y + b.Y, a.Z + b.Z, a.W + b.W);
-		}
+		public static explicit operator Vector3(Vector4 v) => new Vector3(v.X, v.Y, v.Z);
 
-		public static Vector4 operator -(Vector4 v)
-		{
-			return new Vector4(-v.X, -v.Y, -v.Z, -v.W);
-		}
-
-		public static Vector4 operator -(Vector4 a, Vector4 b)
-		{
-			return new Vector4(a.X - b.X, a.Y - b.Y, a.Z - b.Z, a.W - b.W);
-		}
-
-		public static Vector4 operator *(Vector4 a, Vector4 b)
-		{
-			return new Vector4(a.X * b.X, a.Y * b.Y, a.Z * b.Z, a.W * b.W);
-		}
-
-		public static Vector4 operator *(double a, Vector4 b)
-		{
-			return new Vector4(a * b.X, a * b.Y, a * b.Z, a * b.W);
-		}
-
-		public static Vector4 operator *(Vector4 a, double b)
-		{
-			return new Vector4(a.X * b, a.Y * b, a.Z * b, a.W * b);
-		}
-
-		public static Vector4 operator /(Vector4 a, double b)
-		{
-			return new Vector4(a.X / b, a.Y / b, a.Z / b, a.W / b);
-		}
-
-		public static explicit operator Vector3(Vector4 v)
-		{
-			return new Vector3(v.X, v.Y, v.Z);
-		}
-
-		public static bool operator ==(Vector4 a, Vector4 b)
-		{
-			return (a.X == b.X) && (a.Y == b.Y) && (a.Z == b.Z) && (a.W == b.W);
-		}
-
-		public static bool operator !=(Vector4 a, Vector4 b)
-		{
-			return (a.X != b.X) || (a.Y != b.Y) || (a.Z != b.Z) || (a.W != b.W);
-		}
+		public static bool operator ==(Vector4 left, Vector4 right) => left.Equals(right);
+		public static bool operator !=(Vector4 left, Vector4 right) => !(left == right);
 
 		#endregion
 
 		#region Instance Methods
 
-		public double Length()
-		{
-			return (double)Math.Sqrt(X * X + Y * Y + Z * Z + W * W);
-		}
+		public double Length() => (double)Math.Sqrt(X * X + Y * Y + Z * Z + W * W);
 
-		public double LengthSquarred()
-		{
-			return X * X + Y * Y + Z * Z + W * W;
-		}
+		public double LengthSquarred() => X * X + Y * Y + Z * Z + W * W;
 
 		public void Normalize()
 		{
@@ -136,15 +89,9 @@ namespace CrystalRay
 				return v;
 		}
 
-		public static double DotProduct(Vector4 a, Vector4 b)
-		{
-			return a.X * b.X + a.Y * b.Y + a.Z * b.Z + a.W * b.W;
-		}
+		public static double DotProduct(Vector4 a, Vector4 b) => a.X * b.X + a.Y * b.Y + a.Z * b.Z + a.W * b.W;
 
-		public static Vector4 CrossProduct(Vector4 a, Vector4 b)
-		{
-			return new Vector4(a.Y * b.Z - a.Z * b.Y, a.Z * b.W - a.W * b.Z, a.W * b.X - a.X * b.W, a.X * b.Y - a.Y * b.W);
-		}
+		public static Vector4 CrossProduct(Vector4 a, Vector4 b) => new Vector4(a.Y * b.Z - a.Z * b.Y, a.Z * b.W - a.W * b.Z, a.W * b.X - a.X * b.W, a.X * b.Y - a.Y * b.W);
 
 		public static Vector4 Lerp(double f, Vector4 a, Vector4 b)
 		{
@@ -155,26 +102,11 @@ namespace CrystalRay
 
 		#endregion
 
-		public override bool Equals(object obj)
-		{
-			if (obj is Vector4)
-			{
-				Vector4 v = (Vector4)obj;
-
-				return (v.X == X) && (v.Y == Y) && (v.Z == Z) && (v.W == W);
-			}
-			else
-				return false;
-		}
-
-		public override int GetHashCode()
-		{
-			return X.GetHashCode() ^ Y.GetHashCode() ^ Z.GetHashCode() ^ W.GetHashCode();
-		}
+		public override bool Equals(object obj) => obj is Vector4 vector && Equals(vector);
+		public bool Equals(Vector4 other) => X == other.X && Y == other.Y && Z == other.Z && W == other.W;
+		public override int GetHashCode() => HashCode.Combine(X, Y, Z, W);
 
 		public override string ToString()
-		{
-			return "{ X = " + X.ToString() + "; Y = " + Y.ToString() + "; Z = " + Z.ToString() + "; W = " + W.ToString() +  " }";
-		}
+			=> $"{{ X = {X.ToString()}; Y = {Y.ToString()}; Z = {Z.ToString()}; W = {W.ToString()} }}";
 	}
 }

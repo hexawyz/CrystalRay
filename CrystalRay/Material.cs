@@ -1,26 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace CrystalRay
 {
 	public sealed class Material
 	{
-		static Material defaultMaterial = new Material();
-
-		public static Material Default
-		{
-			get
-			{
-				return defaultMaterial;
-			}
-		}
+		public static Material Default { get; } = new Material();
 
 		public Vector4 Diffuse, Specular, Emissive;
 		public double Shininess, Reflectivity, RefractiveIndex;
 
 		public Material()
-			: this (new Vector4(1, 1, 1, 1))
+			: this(new Vector4(1, 1, 1, 1))
 		{
 		}
 

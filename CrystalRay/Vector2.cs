@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 
 namespace CrystalRay
 {
 	[StructLayout(LayoutKind.Sequential)]
-	public struct Vector2
+	public struct Vector2 : IEquatable<Vector2>
 	{
 		public static readonly Vector2 Empty = new Vector2();
 
@@ -18,64 +18,26 @@ namespace CrystalRay
 
 		#region Operators
 
-		public static Vector2 operator +(Vector2 v)
-		{
-			return v;
-		}
+		public static Vector2 operator +(Vector2 v) => v;
+		public static Vector2 operator +(Vector2 a, Vector2 b) => new Vector2(a.X + b.X, a.Y + b.Y);
+		public static Vector2 operator -(Vector2 v) => new Vector2(-v.X, -v.Y);
+		public static Vector2 operator -(Vector2 a, Vector2 b) => new Vector2(a.X - b.X, a.Y - b.Y);
+		public static Vector2 operator *(double a, Vector2 b) => new Vector2(a * b.X, a * b.Y);
+		public static Vector2 operator *(Vector2 a, double b) => new Vector2(a.X * b, a.Y * b);
+		public static Vector2 operator /(Vector2 a, double b) => new Vector2(a.X / b, a.Y / b);
 
-		public static Vector2 operator +(Vector2 a, Vector2 b)
-		{
-			return new Vector2(a.X + b.X, a.Y + b.Y);
-		}
-
-		public static Vector2 operator -(Vector2 v)
-		{
-			return new Vector2(-v.X, -v.Y);
-		}
-
-		public static Vector2 operator -(Vector2 a, Vector2 b)
-		{
-			return new Vector2(a.X - b.X, a.Y - b.Y);
-		}
-
-		public static Vector2 operator *(double a, Vector2 b)
-		{
-			return new Vector2(a * b.X, a * b.Y);
-		}
-
-		public static Vector2 operator *(Vector2 a, double b)
-		{
-			return new Vector2(a.X * b, a.Y * b);
-		}
-
-		public static Vector2 operator /(Vector2 a, double b)
-		{
-			return new Vector2(a.X / b, a.Y / b);
-		}
-
-		public static bool operator ==(Vector2 a, Vector2 b)
-		{
-			return (a.X == b.X) && (a.Y == b.Y);
-		}
-
-		public static bool operator !=(Vector2 a, Vector2 b)
-		{
-			return (a.X != b.X) || (a.Y != b.Y);
-		}
+		public static bool operator ==(Vector2 left, Vector2 right) => left.Equals(right);
+		public static bool operator !=(Vector2 left, Vector2 right) => !(left == right);
 
 		#endregion
 
 		#region Instance Methods
 
 		public double Length()
-		{
-			return (double)Math.Sqrt(X * X + Y * Y);
-		}
+			=> Math.Sqrt(X * X + Y * Y);
 
 		public double LengthSquarred()
-		{
-			return X * X + Y * Y;
-		}
+			=> X * X + Y * Y;
 
 		public void Normalize()
 		{
@@ -83,7 +45,7 @@ namespace CrystalRay
 
 			if (l != 0)
 			{
-				l = (double)(1 / Math.Sqrt(l));
+				l = 1 / Math.Sqrt(l);
 				X *= l;
 				Y *= l;
 			}
@@ -103,13 +65,13 @@ namespace CrystalRay
 				return l * v;
 			}
 			else
+			{
 				return v;
+			}
 		}
 
 		public static double DotProduct(Vector2 a, Vector2 b)
-		{
-			return a.X * b.X + a.Y * b.Y;
-		}
+			=> a.X * b.X + a.Y * b.Y;
 
 		public static Vector2 Lerp(double f, Vector2 a, Vector2 b)
 		{
@@ -119,32 +81,15 @@ namespace CrystalRay
 		}
 
 		public static Vector2 Lerp(double f, double g, Vector2 a, Vector2 b)
-		{
-			return new Vector2(f * a.X + (1 - f) * b.X, g * a.Y + (1 - g) * b.Y);
-		}
+			=> new Vector2(f * a.X + (1 - f) * b.X, g * a.Y + (1 - g) * b.Y);
 
 		#endregion
 
-		public override bool Equals(object obj)
-		{
-			if (obj is Vector2)
-			{
-				Vector2 v = (Vector2)obj;
-
-				return (v.X == X) && (v.Y == Y);
-			}
-			else
-				return false;
-		}
-
-		public override int GetHashCode()
-		{
-			return X.GetHashCode() ^ Y.GetHashCode();
-		}
+		public override bool Equals(object obj) => obj is Vector2 vector && Equals(vector);
+		public bool Equals(Vector2 other) => X == other.X && Y == other.Y;
+		public override int GetHashCode() => HashCode.Combine(X, Y);
 
 		public override string ToString()
-		{
-			return "{ X = " + X.ToString() + "; Y = " + Y.ToString() + " }";
-		}
+			=> $"{{ X = {X.ToString()}; Y = {Y.ToString()} }}";
 	}
 }

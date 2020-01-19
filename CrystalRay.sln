@@ -1,10 +1,16 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28701.123
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrystalRay", "CrystalRay\CrystalRay.csproj", "{7FA94EB8-BEB1-4F61-B614-01FD9AB25941}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CrystalRay", "CrystalRay\CrystalRay.csproj", "{7FA94EB8-BEB1-4F61-B614-01FD9AB25941}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrystalRay.UI", "CrystalRay.UI\CrystalRay.UI.csproj", "{B4AF1053-E2CB-41DA-942E-C4F75B944BF0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CrystalRay.UI", "CrystalRay.UI\CrystalRay.UI.csproj", "{B4AF1053-E2CB-41DA-942E-C4F75B944BF0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{AB127A30-CFC0-4DCD-9292-022D30C39F30}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,5 +29,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {68AC8E90-6076-4C80-A35B-8810A1B13B7E}
 	EndGlobalSection
 EndGlobal

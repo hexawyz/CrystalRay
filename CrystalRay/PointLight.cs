@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System;
 
 namespace CrystalRay
 {
@@ -28,7 +26,7 @@ namespace CrystalRay
 
 		public override ColoredRay? GetLightRay(Ray normalRay)
 		{
-			Vector3 direction = normalRay.Origin - Position;
+			var direction = normalRay.Origin - Position;
 			double l2, l1, i, a;
 
 			i = -Vector3.DotProduct(direction, normalRay.Direction);
@@ -38,11 +36,11 @@ namespace CrystalRay
 				return null;
 
 			l2 = direction.LengthSquarred();
-			l1 = (double)Math.Sqrt(l2);
+			l1 = Math.Sqrt(l2);
 
 			a = Attenuation.Constant + l1 * Attenuation.Linear + l2 * Attenuation.Quadratic;
 
-			return new ColoredRay(new Ray(Position, direction), (i / a) * Color);
+			return new ColoredRay(new Ray(Position, direction), i / a * Color);
 		}
 	}
 }

@@ -1,7 +1,6 @@
-﻿using System;
-using System.Threading;
+using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Threading;
 
 namespace CrystalRay
 {
@@ -9,35 +8,31 @@ namespace CrystalRay
 
 	public sealed class RenderBuffer
 	{
-		Vector3[,] pixels;
-		Scene currentScene;
-		Camera currentCamera;
-		Vector2 viewPortMin, viewPortMax;
-		double viewPortDist;
-		int width, height;
-		int currentX, currentY;
-		int threadCount;
-		int maxBounces;
-		List<Thread> renderThreads;
-		bool rendering;
-		object syncRoot;
+		private readonly Vector3[,] _pixels;
+		private Scene _currentScene;
+		private Camera _currentCamera;
+		private Vector2 _viewPortMin, _viewPortMax;
+		private double _viewPortDist;
+		private readonly int _width;
+		private readonly int _height;
+		private int _currentX, _currentY;
+		private int _threadCount;
+		private int _maxBounces;
+		private readonly List<Thread> _renderThreads;
+		private readonly object _syncRoot;
+		private bool _isRendering;
 
 		public event EventHandler FinishedRendering;
 
 		public RenderBuffer(int width, int height)
 		{
-#if DEBUG
-			// Because debugging multiple threads is really hard, we'll only use one while debugging
-			this.threadCount = 1;
-#else
-			this.threadCount = Environment.ProcessorCount;
-#endif
-			this.width = width;
-			this.height = height;
-			this.maxBounces = 5;
-			this.pixels = new Vector3[height, width];
-            this.renderThreads = new List<Thread>(threadCount);
-			this.syncRoot = new object();
+			_threadCount = Environment.ProcessorCount;
+			_width = width;
+			_height = height;
+			_maxBounces = 5;
+			_pixels = new Vector3[height, width];
+			_renderThreads = new List<Thread>(_threadCount);
+			_syncRoot = new object();
 		}
 
 		/// <summary>
@@ -48,14 +43,8 @@ namespace CrystalRay
 		/// <returns>Returns the color of the pixel</returns>
 		public Vector3 this[int x, int y]
 		{
-			get
-			{
-				return pixels[y, x];
-			}
-			set
-			{
-				pixels[y, x] = value;
-			}
+			get => _pixels[y, x];
+			set => _pixels[y, x] = value;
 		}
 
 		/// <summary>
@@ -63,19 +52,16 @@ namespace CrystalRay
 		/// </summary>
 		public int ThreadCount
 		{
-			get
-			{
-				return threadCount;
-			}
+			get => _threadCount;
 			set
 			{
-				lock (syncRoot)
+				lock (_syncRoot)
 				{
-					if (rendering)
+					if (IsRendering)
 						throw new InvalidOperationException();
 					if (value < 1)
 						throw new ArgumentOutOfRangeException("value");
-					threadCount = value;
+					_threadCount = value;
 				}
 			}
 		}
@@ -85,19 +71,16 @@ namespace CrystalRay
 		/// </summary>
 		public int MaximumBounces
 		{
-			get
-			{
-				return maxBounces;
-			}
+			get => _maxBounces;
 			set
 			{
-				lock (syncRoot)
+				lock (_syncRoot)
 				{
-					if (rendering)
+					if (IsRendering)
 						throw new InvalidOperationException();
 					if (value < 1)
 						throw new ArgumentOutOfRangeException("value");
-					maxBounces = value;
+					_maxBounces = value;
 				}
 			}
 		}
@@ -105,21 +88,12 @@ namespace CrystalRay
 		/// <summary>
 		/// Gets a value indicating if there is a rendering operation currently running
 		/// </summary>
-		public bool Rendering
-		{
-			get
-			{
-				return rendering;
-			}
-		}
+		public bool IsRendering => Volatile.Read(ref _isRendering);
 
 		/// <summary>
 		/// Clears the buffer with black
 		/// </summary>
-		public void Clear()
-		{
-			Clear(Vector3.Empty);
-		}
+		public void Clear() => Clear(Vector3.Empty);
 
 		/// <summary>
 		/// Clears the buffer with the specified color
@@ -127,13 +101,15 @@ namespace CrystalRay
 		/// <param name="color">Color to use</param>
 		public void Clear(Vector3 color)
 		{
-			lock (syncRoot)
+			lock (_syncRoot)
 			{
-				if (rendering)
+				if (IsRendering)
 					throw new InvalidOperationException();
-				for (int i = 0; i < height; i++)
-					for (int j = 0; j < width; j++)
-						pixels[i, j] = color;
+				for (int i = 0; i < _height; i++)
+				{
+					for (int j = 0; j < _width; j++)
+						_pixels[i, j] = color;
+				}
 			}
 		}
 
@@ -144,27 +120,27 @@ namespace CrystalRay
 		public void BeginRendering(Scene scene, Camera camera)
 		{
 			// First, check that we are not already rendering
-			lock (syncRoot)
+			lock (_syncRoot)
 			{
-				if (rendering)
+				if (IsRendering)
 					throw new InvalidOperationException();
 				if (scene == null)
-					throw new ArgumentNullException("scene");
+					throw new ArgumentNullException(nameof(scene));
 				if (camera == null)
-					throw new ArgumentNullException("camera");
-				rendering = true;
+					throw new ArgumentNullException(nameof(camera));
+				Volatile.Write(ref _isRendering, true);
 			}
-			currentScene = scene;
-			currentCamera = camera;
+			_currentScene = scene;
+			_currentCamera = camera;
 			RecalculateViewPort();
-			currentX = 0;
-			currentY = 0;
-			renderThreads.Clear();
-			for (int i = 0; i < threadCount; i++)
+			_currentX = 0;
+			_currentY = 0;
+			_renderThreads.Clear();
+			for (int i = 0; i < _threadCount; i++)
 			{
-				Thread renderThread = new Thread(RenderThread);
+				var renderThread = new Thread(RenderThread);
 
-				renderThreads.Add(renderThread);
+				_renderThreads.Add(renderThread);
 
 				renderThread.Start();
 			}
@@ -175,14 +151,14 @@ namespace CrystalRay
 		/// </summary>
 		public void CancelRendering()
 		{
-			lock (syncRoot)
+			lock (_syncRoot)
 			{
-				if (rendering)
+				if (IsRendering)
 				{
-					rendering = false;
-					for (int i = 0; i < renderThreads.Count; i++)
-						renderThreads[i].Abort();
-					renderThreads.Clear();
+					Volatile.Write(ref _isRendering, false);
+					for (int i = 0; i < _renderThreads.Count; i++)
+						_renderThreads[i].Abort();
+					_renderThreads.Clear();
 				}
 			}
 		}
@@ -195,17 +171,17 @@ namespace CrystalRay
 		/// <param name="data">The data to pass to the filter</param>
 		public unsafe void FilterPixels<T>(PixelFilter<T> filter, T data)
 		{
-			fixed (Vector3* pPixels = pixels)
-				filter(data, pPixels, width, height);
+			fixed (Vector3* pPixels = _pixels)
+				filter(data, pPixels, _width, _height);
 		}
 
-		void RecalculateViewPort()
+		private void RecalculateViewPort()
 		{
 			double angleH, angleV;
 			double sinH, cosH, sinV, cosV;
 
-			angleH = currentCamera.FieldOfVision.X * 0.5f;
-			angleV = currentCamera.FieldOfVision.Y * 0.5f;
+			angleH = _currentCamera.FieldOfVision.X * 0.5f;
+			angleV = _currentCamera.FieldOfVision.Y * 0.5f;
 
 			sinH = (double)Math.Sin(angleH);
 			cosH = (double)Math.Cos(angleH);
@@ -213,15 +189,15 @@ namespace CrystalRay
 			sinV = (double)Math.Sin(angleV);
 			cosV = (double)Math.Cos(angleV);
 
-			viewPortMin = new Vector2(sinH * cosV, -sinV);
-			viewPortMax = new Vector2(-sinH * cosV, sinV);
-			viewPortDist = cosH * cosV;
+			_viewPortMin = new Vector2(sinH * cosV, -sinV);
+			_viewPortMax = new Vector2(-sinH * cosV, sinV);
+			_viewPortDist = cosH * cosV;
 		}
 
 		/// <summary>
 		/// Render method for a Thread
 		/// </summary>
-		void RenderThread()
+		private void RenderThread()
 		{
 			int x, y;
 			double rx, ry;
@@ -231,38 +207,38 @@ namespace CrystalRay
 			// Render pixels in a multithreaded fashion
 			// The pixel to render is chosen in a synchronized manner, which may look heavy
 			// But the lock here is negligible compared to the real rendering work
-			while (rendering)
+			while (IsRendering)
 			{
 				Thread.Sleep(0);
 				// First lookup for a pixel to render
-				lock (syncRoot)
+				lock (_syncRoot)
 				{
-					if (currentY >= height)
+					if (_currentY >= _height)
 						break;
 
-					x = currentX++;
-					y = currentY;
+					x = _currentX++;
+					y = _currentY;
 
-					if (currentX >= width)
+					if (_currentX >= _width)
 					{
-						currentX = 0;
-						currentY++;
+						_currentX = 0;
+						_currentY++;
 					}
 
-					if (currentY >= height)
+					if (_currentY >= _height)
 						lastPixel = true;
 				}
 
-				rx = (double)x / (width - 1);
-				ry = (double)y / (height - 1);
+				rx = (double)x / (_width - 1);
+				ry = (double)y / (_height - 1);
 
 				// Then render the pixel
-				pixels[y, x] = (Vector3)currentScene.Cast(new Ray(currentCamera.Position, new Vector3(Vector2.Lerp(rx, ry, viewPortMin, viewPortMax), viewPortDist)), currentCamera, ref indexStack, maxBounces);
+				_pixels[y, x] = (Vector3)_currentScene.Cast(new Ray(_currentCamera.Position, new Vector3(Vector2.Lerp(rx, ry, _viewPortMin, _viewPortMax), _viewPortDist)), _currentCamera, ref indexStack, _maxBounces);
 			}
 
 			if (lastPixel)
 			{
-				rendering = false;
+				Volatile.Write(ref _isRendering, false);
 				OnFinishedRendering(EventArgs.Empty);
 			}
 		}
@@ -272,10 +248,6 @@ namespace CrystalRay
 		/// </summary>
 		/// <param name="e">EventArgs object</param>
 		/// <remarks>It is garanteed that this method will only be called once, but it is not possible to predict whic thread will call it</remarks>
-		void OnFinishedRendering(EventArgs e)
-		{
-			if (FinishedRendering != null)
-				FinishedRendering(this, e);
-		}
+		private void OnFinishedRendering(EventArgs e) => FinishedRendering?.Invoke(this, e);
 	}
 }

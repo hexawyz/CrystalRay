@@ -1,44 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace CrystalRay
 {
 	public abstract class Solid : Element
 	{
-		Material material;
+		private Material _material;
 
 		public Solid()
 			: this(Material.Default)
 		{
 		}
 
-		public Solid(Material material)
-		{
-			this.material = material;
-		}
+		public Solid(Material material) => _material = material;
 
-		public virtual bool Filled
-		{
-			get
-			{
-				return true;
-			}
-		}
+		public virtual bool Filled => true;
 
 		public Material Material
 		{
-			get
-			{
-				return material;
-			}
-			set
-			{
-				if (value == null)
-					material = Material.Default;
-				else
-					material = value;
-			}
+			get => _material;
+			set => _material = value ?? Material.Default;
 		}
 
 		public abstract Ray? Intersects(Ray ray);

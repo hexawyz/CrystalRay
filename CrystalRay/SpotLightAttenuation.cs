@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 
 namespace CrystalRay
@@ -12,9 +12,9 @@ namespace CrystalRay
 		public SpotLightAttenuation(double constant, double linear, double quadratic, double phi, double theta, double falloff)
 		{
 			if (theta < 0 || theta > Math.PI)
-				throw new ArgumentOutOfRangeException("theta");
+				throw new ArgumentOutOfRangeException(nameof(theta));
 			if (phi < theta || phi > Math.PI)
-				throw new ArgumentOutOfRangeException("phi");
+				throw new ArgumentOutOfRangeException(nameof(phi));
 			Constant = constant;
 			Linear = linear;
 			Quadratic = quadratic;
