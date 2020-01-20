@@ -227,8 +227,8 @@ namespace CrystalRay
 						}
 						else
 						{
-							//refractedColor = Cast(DisplaceRay(nearestNormalRay.Origin, reflectedDirection), camera, refractiveIndex, nBounces - 1);
-							refractedColor = Vector4.Zero;
+							refractedColor = Cast(DisplaceRay(nearestNormalRay.Origin, reflectedDirection), camera, indexStack, nBounces - 1);
+							//refractedColor = Vector4.Zero;
 						}
 
 						return LightPoint(ray, nearestNormalRay, nearestSolid, camera) * nearestSolid.Material.Diffuse.W
@@ -310,7 +310,7 @@ namespace CrystalRay
 						intersectionNormalRay = _solidList[j].Intersects(coloredRay.Value.Ray);
 
 						// If there is an intesection, check the length (maybe our point is nearer)
-						if (intersectionNormalRay != null)
+						if (intersectionNormalRay != null && _solidList[j].Material.Diffuse.W >= 1d) // NB: Hack for translucent materials…
 						{
 							if (_solidList[j] == solid)
 								reflectedDirection = coloredRay.Value.Ray.Direction - 2 * Vector3.DotProduct(coloredRay.Value.Ray.Direction, intersectionNormalRay.Value.Direction) * intersectionNormalRay.Value.Direction;

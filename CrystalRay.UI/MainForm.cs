@@ -19,7 +19,7 @@ namespace CrystalRay.UI
 		{
 			SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.Opaque | ControlStyles.ResizeRedraw, true);
 			InitializeComponent();
-			InitializeBuffers(800, 600);
+			InitializeBuffers(1920, 1080);
 			InitializeScene();
 			BeginRendering();
 		}
@@ -63,6 +63,10 @@ namespace CrystalRay.UI
 			_scene.Elements.Add(new Sphere(new Vector3(-1, -1, 0.5), 0.5, mirror));
 			_scene.Elements.Add(new Sphere(new Vector3(0, -1, 1), 0.5, mirror));
 			_scene.Elements.Add(new Sphere(new Vector3(1, -1, 0.5), 0.5, mirror));
+
+			_scene.Elements.Add(new Sphere(new Vector3(1, -0.2, 2.5), 0.5, glass));
+			_scene.Elements.Add(new Sphere(new Vector3(0, 0.5, 2.5), 0.5, glass));
+			_scene.Elements.Add(new Sphere(new Vector3(-1, -0.2, 2.5), 0.5, glass));
 
 			_scene.Elements.Add(new PointLight(new Vector3(-2, 2, 3), new Vector4(1, 1, 1, 1), new LightAttenuation(0.0, 0.0, 0.6)));
 			_scene.Elements.Add(new PointLight(new Vector3(2, 2, 3), new Vector4(1, 1, 1, 1), new LightAttenuation(0.0, 0.0, 0.6)));
