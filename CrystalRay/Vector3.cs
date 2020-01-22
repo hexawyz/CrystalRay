@@ -73,7 +73,7 @@ namespace CrystalRay
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public double LengthSquared()
-			=> DotProduct(this, this);
+			=> Sse41.DotProduct(_xy, _xy, 0b_11_00_01).ToScalar() + _z * _z;
 
 		#endregion
 
@@ -96,10 +96,7 @@ namespace CrystalRay
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static double DotProduct(Vector3 a, Vector3 b)
-		{
-			var xy = Sse2.Multiply(a._xy, b._xy);
-			return xy.GetElement(0) + xy.GetElement(1) + a._z * b._z;
-		}
+			=> Sse41.DotProduct(a._xy, b._xy, 0b_11_00_01).ToScalar() + a._z * b._z;
 
 		public static Vector3 CrossProduct(Vector3 a, Vector3 b)
 			=> new Vector3(a.Y * b.Z - a.Z * b.Y, a.Z * b.X - a.X * b.Z, a.X * b.Y - a.Y * b.X);
@@ -114,7 +111,13 @@ namespace CrystalRay
 		#endregion
 
 		public override bool Equals(object obj) => obj is Vector3 vector && Equals(vector);
-		public bool Equals(Vector3 other) => X == other.X && Y == other.Y && Z == other.Z;
+
+		public bool Equals(Vector3 other)
+		{
+			var r = Sse2.Xor(_xy, other._xy).AsUInt64();
+			return Sse41.TestZ(r, r) && _z == other._z;
+		}
+
 		public override int GetHashCode() => HashCode.Combine(X, Y, Z);
 
 		public override string ToString() => $"{{ X = {X.ToString()}; Y = {Y.ToString()}; Z = {Z.ToString()} }}";

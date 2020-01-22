@@ -70,7 +70,12 @@ namespace CrystalRay
 			=> Math.Sqrt(LengthSquared());
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public double LengthSquared() => DotProduct(this, this);
+		public double LengthSquared()
+		{
+			var product = Avx.Multiply(_xyzw, _xyzw);
+			var partialSums = Sse2.Add(product.GetUpper(), product.GetLower());
+			return partialSums.GetElement(0) + partialSums.GetElement(1);
+		}
 
 		#endregion
 
@@ -110,7 +115,13 @@ namespace CrystalRay
 		#endregion
 
 		public override bool Equals(object obj) => obj is Vector4 vector && Equals(vector);
-		public bool Equals(Vector4 other) => X == other.X && Y == other.Y && Z == other.Z && W == other.W;
+
+		public bool Equals(Vector4 other)
+		{
+			var r = Avx.Xor(_xyzw, other._xyzw).AsUInt64();
+			return Avx.TestZ(r, r);
+		}
+
 		public override int GetHashCode() => HashCode.Combine(X, Y, Z, W);
 
 		public override string ToString()

@@ -58,7 +58,7 @@ namespace CrystalRay
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public double LengthSquared()
-			=> DotProduct(this, this);
+			=> Sse41.DotProduct(_xy, _xy, 0b_11_00_01).ToScalar();
 
 		#endregion
 
@@ -81,11 +81,7 @@ namespace CrystalRay
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static double DotProduct(Vector2 a, Vector2 b)
-		{
-			var m = Sse2.Multiply(a._xy, b._xy);
-
-			return m.GetElement(0) + m.GetElement(1);
-		}
+			=> Sse41.DotProduct(a._xy, b._xy, 0b_11_00_01).ToScalar();
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static Vector2 Lerp(double f, Vector2 a, Vector2 b)
@@ -98,7 +94,13 @@ namespace CrystalRay
 		#endregion
 
 		public override bool Equals(object obj) => obj is Vector2 vector && Equals(vector);
-		public bool Equals(Vector2 other) => X == other.X && Y == other.Y;
+
+		public bool Equals(Vector2 other)
+		{
+			var r = Sse2.Xor(_xy, other._xy).AsUInt64();
+			return Sse41.TestZ(r, r);
+		}
+
 		public override int GetHashCode() => HashCode.Combine(X, Y);
 
 		public override string ToString()
