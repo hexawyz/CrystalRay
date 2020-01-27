@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
@@ -7,12 +8,13 @@ using System.Runtime.Intrinsics.X86;
 namespace CrystalRay
 {
 	// ⚠️ AVX required
+	[DebuggerDisplay("{_xyzw}")]
 	[StructLayout(LayoutKind.Sequential, Size = 32)]
 	public struct Vector4 : IEquatable<Vector4>
 	{
 		public static readonly Vector4 Zero = new Vector4();
 
-		private readonly Vector256<double> _xyzw;
+		internal readonly Vector256<double> _xyzw;
 
 		public double X => _xyzw.GetElement(0);
 		public double Y => _xyzw.GetElement(1);
@@ -124,7 +126,6 @@ namespace CrystalRay
 
 		public override int GetHashCode() => HashCode.Combine(X, Y, Z, W);
 
-		public override string ToString()
-			=> $"{{ X = {X.ToString()}; Y = {Y.ToString()}; Z = {Z.ToString()}; W = {W.ToString()} }}";
+		public override string ToString() => _xyzw.ToString();
 	}
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
@@ -6,6 +7,7 @@ using System.Runtime.Intrinsics.X86;
 
 namespace CrystalRay
 {
+	[DebuggerDisplay("{_xy}")]
 	[StructLayout(LayoutKind.Sequential)]
 	public struct Vector2 : IEquatable<Vector2>
 	{
@@ -103,7 +105,6 @@ namespace CrystalRay
 
 		public override int GetHashCode() => HashCode.Combine(X, Y);
 
-		public override string ToString()
-			=> $"{{ X = {X.ToString()}; Y = {Y.ToString()} }}";
+		public override string ToString() => _xy.ToString();
 	}
 }

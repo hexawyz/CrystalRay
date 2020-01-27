@@ -12,6 +12,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrystalRay.Tests", "CrystalRay.Tests\CrystalRay.Tests.csproj", "{2591935E-8331-423C-A021-56C376F058FF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,6 +28,10 @@ Global
 		{B4AF1053-E2CB-41DA-942E-C4F75B944BF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B4AF1053-E2CB-41DA-942E-C4F75B944BF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B4AF1053-E2CB-41DA-942E-C4F75B944BF0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2591935E-8331-423C-A021-56C376F058FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2591935E-8331-423C-A021-56C376F058FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2591935E-8331-423C-A021-56C376F058FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2591935E-8331-423C-A021-56C376F058FF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
